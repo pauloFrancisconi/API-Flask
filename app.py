@@ -55,18 +55,18 @@ def predict():
 
         # Certificar-se de que os dados são transformados corretamente
         enc_brand       = encoder_brand      .transform((np.array(data["brand"]).reshape(-1, 1)))
-        enc_engine_size = encoder_engine_size.transform((np.array(data["engine_size"]).reshape(-1, 1)))
         enc_fuel        = encoder_fuel       .transform((np.array(data["fuel"]).reshape(-1, 1)))
         enc_gear        = encoder_gear       .transform((np.array(data["gear"]).reshape(-1, 1)))
         enc_model       = encoder_model      .transform((np.array(data["model"]).reshape(-1, 1)))
-        enc_year_model  = encoder_year_model .transform((np.array(data["year_model"]).reshape(-1, 1)))
+        #enc_engine_size = encoder_engine_size.transform((np.array(data["engine_size"]).reshape(-1, 1)))
+        #enc_year_model  = encoder_year_model .transform((np.array(data["year_model"]).reshape(-1, 1)))
         dados = {
             "brand": [enc_brand],
-            "model": [enc_engine_size],
+            "model": [enc_model],
             "fuel": [enc_fuel],
             "gear": [enc_gear],
-            "engine_size": [enc_model],
-            "year_model": [enc_year_model],
+            "engine_size": [data["engine_size"]],
+            "year_model": [data["year_model"]],
         }
         print(dados)
         df = pd.DataFrame(dados)
