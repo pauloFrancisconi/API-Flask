@@ -60,7 +60,7 @@ def predict():
         # Certificar-se de que os dados são transformados corretamente
         encoded_features = encoder.transform([features]).tolist()[0]
 
-        # Fazer a previsão
+        # Fazer a previsã
         prediction = model.predict([encoded_features])[0]
 
         return jsonify({"Preco": prediction})
