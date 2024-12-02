@@ -1,15 +1,27 @@
 from flask import Flask, request, jsonify
 import joblib
 import numpy as np
+import pandas as pd
 
 app = Flask(__name__)
 
 MODEL_PATH = "model/fipe.pkl"
 ENCODER_PATH = "model/encoder.pkl"
+ENCODER_BRAND_PATH = "model/encoder_brand.pkl"
+ENCODER_ENGINE_SIZE_PATH  = "model/encoder_engine_size.pkl"
+ENCODER_FUEL_PATH  = "model/encoder_fuel.pkl"
+ENCODER_GEAR_PATH  = "model/encoder_gear.pkl"
+ENCODER_MODEL_PATH  = "model/encoder_model.pkl"
+ENCODER_YEAR_MODEL_PATH  = "model/encoder_year_model.pkl"
 
 # Carregar o modelo e o encoder
 model = joblib.load(MODEL_PATH)
-encoder = joblib.load(ENCODER_PATH)
+encoder_brand       = joblib.load(ENCODER_BRAND_PATH)
+encoder_engine_size = joblib.load(ENCODER_ENGINE_SIZE_PATH) 
+encoder_fuel        = joblib.load(ENCODER_FUEL_PATH) 
+encoder_gear        = joblib.load(ENCODER_GEAR_PATH) 
+encoder_model       = joblib.load(ENCODER_MODEL_PATH) 
+encoder_year_model  = joblib.load(ENCODER_YEAR_MODEL_PATH) 
 
 # Lista de valores válidos para ano de referência
 valid_years = ['2020', '2021']
@@ -26,9 +38,6 @@ def predict():
 
         # Campos obrigatórios
         required_fields = [
-            "year_of_reference",
-            "month_of_reference",
-            "fipe_code",
             "brand",
             "model",
             "fuel",
@@ -41,27 +50,27 @@ def predict():
                 return jsonify({"error": f"Campo '{field}' é obrigatório"}), 400
 
         # Validação do ano de referência
-        if str(data["year_of_reference"]) not in valid_years:
-            return jsonify({"error": "Ano de referência inválido. Valores válidos são: 2020, 2021."}), 400
-
-        # Pré-processar as entradas
-        features = [
-            data["year_of_reference"],
-            data["month_of_reference"],
-            data["fipe_code"],
-            data["brand"],
-            data["model"],
-            data["fuel"],
-            data["gear"],
-            data["engine_size"],
-            data["year_model"]
-        ]
+        # if str(data["year_of_reference"]) not in valid_years:
+        #     return jsonify({"error": "Ano de referência inválido. Valores válidos são: 2020, 2021."}), 400
 
         # Certificar-se de que os dados são transformados corretamente
-        encoded_features = encoder.transform([features]).tolist()[0]
-
-        # Fazer a previsã
-        prediction = model.predict([encoded_features])[0]
+        enc_brand       = encoder_brand      .transform((np.array(data["brand"]).reshape(-1, 1)))
+        enc_engine_size = encoder_engine_size.transform((np.array(data["engine_size"]).reshape(-1, 1)))
+        enc_fuel        = encoder_fuel       .transform((np.array(data["fuel"]).reshape(-1, 1)))
+        enc_gear        = encoder_gear       .transform((np.array(data["gear"]).reshape(-1, 1)))
+        enc_model       = encoder_model      .transform((np.array(data["model"]).reshape(-1, 1)))
+        enc_year_model  = encoder_year_model .transform((np.array(data["year_model"]).reshape(-1, 1)))
+        dados = {
+            "brand": [enc_brand],
+            "model": [enc_engine_size],
+            "fuel": [enc_fuel],
+            "gear": [enc_gear],
+            "engine_size": [enc_model],
+            "year_model": [enc_year_model],
+        }
+        print(dados)
+        df = pd.DataFrame(dados)
+        prediction = model.predict(df)[0]
 
         return jsonify({"Preco": prediction})
 
